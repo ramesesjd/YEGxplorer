@@ -9,37 +9,45 @@ from collections import Counter
 
 # print(folium.__version__)
 
-trees = pd.read_csv('trees.csv')
-#trees['planted_date'].unique()
-trees = trees[trees['planted_date'] != '1190-06-01']  ##remove problematic samples
+trees = pd.read_csv('data-trees.csv')
+trees = trees[trees['planted_date'] != '1190-06-01']  # remove problematic samples
 
-treecount=Counter(trees['neighbourhood_name'])  ##count number of entries for each neighbourhood name (equivalent to number of trees)
-treecount=pd.DataFrame.from_dict(treecount, orient='index').reset_index()  ##convert treecount to a dataframe
-treecount=treecount.rename(columns={'index':'neighbourhood_name', 0:'treecount'})  ##rename columns
-treecount['neighbourhood_name']=treecount['neighbourhood_name'].str.upper()  ##convert names to UPPER case to match with bdry
-#treecount.to_csv('treecount.csv')  ##output csv for checking
+# count number of entries for each neighbourhood name (equivalent to number of
+# trees), convert to dataframe, rename columns and convert to uppercase.
+treecount = Counter(trees['neighbourhood_name'])
+treecount = pd.DataFrame.from_dict(treecount, orient='index').reset_index()
+treecount = treecount.rename(columns={'index': 'neighbourhood_name', 0: 'treecount'})
+treecount['neighbourhood_name'] = treecount['neighbourhood_name'].str.upper()
 
 
-with open('bdry.geojson', "r") as bdry_file: ##open file in read mode ("r")
-    bdry=json.load(bdry_file)
+# open boundary file in read mode ("r")
+with open('data-bdry.geojson', "r") as bdry_file:
+    bdry = json.load(bdry_file)
 
-with open('area.csv', 'w') as area_file:  ##creates 'area.csv' and opens in write mode ('w')
+# creates 'area.csv' and opens in write mode ('w')
+# prints neighbourhood name and calculated area to file
+# closes area_file after for loop to finalize file
+with open('area.csv', 'w') as area_file:
     for x in bdry['features']:
-        print(x['properties']['name'], ',', area(x['geometry']), file=area_file) ##prints to area_file
-area_file.close()  ##closes area_file after for loop to finalize file
+        print(x['properties']['name'], ',', area(x['geometry']), file=area_file)
+area_file.close()
 
-area_df = pd.read_csv('area.csv', names=['neighbourhood_name','area'])  ##reads area.csv and adds column names
+# reads area.csv and adds column names
+# removes trailing and leading spaces from entries in 'neighbourhood_name'
+area_df = pd.read_csv('area.csv', names=['neighbourhood_name','area'])
+area_df['neighbourhood_name'] = area_df['neighbourhood_name'].map(lambda x: x.strip())
 
-area_df['neighbourhood_name']=area_df['neighbourhood_name'].map(lambda x: x.strip())  ##removes trailing and leading spaces from 'neighbourhood_name'
-
-treedens = pd.merge(treecount, area_df, on = 'neighbourhood_name', how = 'right')
+treedens = pd.merge(treecount, area_df, on='neighbourhood_name', how='right')
 treedens['area'] = treedens['area']/1e6
 treedens['treepersqkm'] = treedens['treecount']/treedens['area']
 
-##following method is much faster than populating a list by iterating row-wise through the main dataframe
+# following method is much faster than populating a list by
+# iterating row-wise through the main dataframe
 lat = trees.latitude[trees.latitude.notnull()].values
 long = trees.longitude[trees.longitude.notnull()].values
 
+# cannot use species name yet.  See:
+# https://github.com/python-visualization/folium/issues/1089
 spec = trees.species[trees.longitude.notnull()]
 spec = spec.str.split(',', expand=True)
 spec = spec[1] + ' ' + spec[0]
@@ -52,6 +60,8 @@ tree_vals = [list(a) for a in zip(lat, long, hlth, size)]
 tree_vals = pd.DataFrame(tree_vals, columns=['lat', 'lng', 'hlth', 'size'])
 tree_vals = tree_vals.values
 
+# callback for custom marker action
+# size is scaled down (treesz = ln(size*2))
 callback = """
 function (row) {
     var hlthcol;
@@ -80,8 +90,10 @@ fmap = folium.Map(location=[53.52,-113.5]
 
 fmap_chor = folium.Choropleth(geo_data = bdry
                               , data = treedens
-                              , columns = ['neighbourhood_name','treepersqkm'] ##first value is key in the dataframe, second is the data to display
-                              , key_on = 'feature.properties.name' ##name of key in json file
+                              # first value is key in the dataframe, second is the data to display
+                              , columns = ['neighbourhood_name','treepersqkm']
+                              # name of key in json file
+                              , key_on = 'feature.properties.name'
                               , fill_color = 'BuPu'
                               , legend_name = '# of trees per sq. km'
                               , highlight=True
@@ -91,7 +103,8 @@ fmap_chor = folium.Choropleth(geo_data = bdry
 fmap_fmc = plugins.FastMarkerCluster(tree_vals
                                      , callback=callback
                                      , options={'spiderfyOnMaxZoom': False
-                                                , 'disableClusteringAtZoom': 17 # #will only show individual points at this zoom level or higher
+                                     # will only show individual points at this zoom level or higher
+                                                , 'disableClusteringAtZoom': 17
                                                 , 'chunkedLoading': True
                                                }
                                      , name='Tree Locations'
