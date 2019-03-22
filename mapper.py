@@ -65,9 +65,9 @@ tree_vals = tree_vals.values
 callback = """
 function (row) {
     var hlthcol;
-        if(row[2] > 50 && row[2] < 75){
+        if(row[2] > 50 && row[2] < 70){
             hlthcol = "orange";
-            } else if(row[2] > 75){
+            } else if(row[2] > 70){
                 hlthcol = "green";
                 } else {hlthcol = "black";}
     var treesz;
@@ -82,11 +82,10 @@ function (row) {
 };
 """
 
-fmap = folium.Map(location=[53.52,-113.5]
+fmap = folium.Map(location=[53.52, -113.5]
                   , zoom_start=10.5
                   , prefer_canvas=True
-                  #, width = 600, height = 600
-                 )
+                  )
 
 fmap_chor = folium.Choropleth(geo_data = bdry
                               , data = treedens
