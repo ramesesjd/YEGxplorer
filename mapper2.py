@@ -78,8 +78,9 @@ function (row) {
     var marker;
     marker = L.circleMarker(new L.LatLng(row[0], row[1]), {color:hlthcol, radius:treesz});
     marker.bindPopup("<b>Species:</b> " + row[4] +"<br>\
-		     <b>Health=</b> " + row[2] +"% <br>\
-                     <b>Diameter at breast height =</b> " + row[3] + " cm")
+		     <b>Health:</b> " + row[2] +"% <br>\
+                     <b>Diameter at breast height:</b> " + row[3] + " 
+cm")
     return marker;
 };
 """
