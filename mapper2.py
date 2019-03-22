@@ -46,8 +46,6 @@ treedens['treepersqkm'] = treedens['treecount']/treedens['area']
 lat = trees.latitude[trees.latitude.notnull()].values
 long = trees.longitude[trees.longitude.notnull()].values
 
-# cannot use species name yet.  See:
-# https://github.com/python-visualization/folium/issues/1089
 spec = trees.species[trees.longitude.notnull()]
 spec = spec.str.split(',', expand=True)
 spec = spec[1] + ' ' + spec[0]
@@ -79,8 +77,7 @@ function (row) {
     marker = L.circleMarker(new L.LatLng(row[0], row[1]), {color:hlthcol, radius:treesz});
     marker.bindPopup("<b>Species:</b> " + row[4] +"<br>\
 		     <b>Health:</b> " + row[2] +"% <br>\
-                     <b>Diameter at breast height:</b> " + row[3] + " 
-cm")
+                     <b>Diameter at breast height:</b> " + row[3] + " cm")
     return marker;
 };
 """
