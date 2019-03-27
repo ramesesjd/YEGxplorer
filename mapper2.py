@@ -50,33 +50,37 @@ spec = trees.species[trees.longitude.notnull()]
 spec = spec.str.split(',', expand=True)
 spec = spec[1] + ' ' + spec[0]
 
-hlth = trees.condition_percent.values
+cond = trees.condition_percent.values
 
 size = trees.diameter_breast_height.values
 
-tree_vals = [list(a) for a in zip(lat, long, hlth, size, spec)]
-tree_vals = pd.DataFrame(tree_vals, columns=['lat', 'lng', 'hlth', 
-'size', 'spec'])
+tree_vals = [list(a) for a in zip(lat, long, cond, size, spec)]
+tree_vals = pd.DataFrame(tree_vals, columns=['lat', 'lng', 'cond', 'size', 'spec'])
 tree_vals = tree_vals.values
 
 # callback for custom marker action
 # size is scaled down (treesz = ln(size)*2)
 callback = """
 function (row) {
-    var hlthcol;
+    var condtxt;
+    var condcol;
         if(row[2] > 50 && row[2] < 69){
-            hlthcol = "orange";
+            condtxt = "Average";
+            condcol = "orange";
             } else if(row[2] > 69){
-                hlthcol = "green";
-                } else {hlthcol = "crimson";}
+                condtxt = "Above average";
+                condcol = "green";
+                } else {
+                    condtxt = "Below Average";
+                    condcol = "crimson";}
     var treesz;
         if(row[3] == 0){
             treesz = 1;
             } else {treesz = (Math.log(row[3])*2);}
     var marker;
-    marker = L.circleMarker(new L.LatLng(row[0], row[1]), {color:hlthcol, radius:treesz});
+    marker = L.circleMarker(new L.LatLng(row[0], row[1]), {color:condcol, radius:treesz});
     marker.bindPopup("<b>Species:</b> " + row[4] +"<br>\
-		     <b>Health:</b> " + row[2] +"% <br>\
+		     <b>Condition:</b> " + condtxt + " (" + row[2] +"%) <br>\
                      <b>Diameter at breast height:</b> " + row[3] + " cm")
     return marker;
 };
