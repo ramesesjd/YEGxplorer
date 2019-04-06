@@ -86,6 +86,27 @@ function (row) {
 };
 """
 
+legend_html = """
+    <div style="position: fixed;
+    bottom: 25px; right: 25px; width: 160px; height: 130px; background-color: #FFF;
+    border:2px solid grey; z-index:9999; font-size:14px;
+    ">&nbsp; <span style="font-weight:bold">Tree condition</span> <br>
+    &nbsp; <span class="fa-stack fa-lg">
+      <i class="fa fa-circle fa-stack-1x" style="color:green; opacity: 0.4"></i>
+      <i class="fa fa-circle-o fa-stack-1x" style="color:green"></i>
+    </span> Above average &nbsp; <br>
+    &nbsp; <span class="fa-stack fa-lg">
+      <i class="fa fa-circle fa-stack-1x" style="color:orange; opacity: 0.4"></i>
+      <i class="fa fa-circle-o fa-stack-1x" style="color:orange"></i>
+    </span> Average &nbsp; <br>
+    &nbsp; <span class="fa-stack fa-lg">
+      <i class="fa fa-circle fa-stack-1x" style="color:crimson; opacity: 0.4"></i>
+      <i class="fa fa-circle-o fa-stack-1x" style="color:crimson"></i>
+    </span> Below average &nbsp;
+    </div>
+"""
+
+
 fmap = folium.Map(location=[53.52, -113.5]
                   , zoom_start=10.5
                   , prefer_canvas=True
@@ -116,5 +137,6 @@ fmap_fmc = plugins.FastMarkerCluster(tree_vals
 fmap_chor.add_to(fmap)
 fmap_fmc.add_to(fmap)
 folium.LayerControl().add_to(fmap)
+fmap.get_root().html.add_child(folium.Element(legend_html))
 
 fmap.save('index.html')
